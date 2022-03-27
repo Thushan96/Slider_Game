@@ -1,9 +1,11 @@
 window.addEventListener("load", function (){
     const canvas=document.getElementById("canvas1");
     const ctx=canvas.getContext('2d');
-    canvas.width=800;
+    canvas.width=1600;
     canvas.height=720;
     let enemies=[];
+    let score=0;
+    let gameOver=false;
 
 
 
@@ -19,7 +21,7 @@ class InputHandler{
                 e.key=='ArrowRight' 
                 && this.keys.indexOf(e.key)==-1){
                 this.keys.push(e.key);
-            }
+            }else if (e.key=='Enter' && gameOver) restartGame();
 
         });
         window.addEventListener('keyup',e=>{
@@ -42,26 +44,65 @@ class Player{
         this.gameHeight=gameHeight;
         this.width=200;
         this.height=200;
-        this.x=0;
+        this.x=100;
         this.y=this.gameHeight-this.height;
         this.image=document.getElementById("playerImage");
         this.frameX=0;
+        this.maxFrame=5;
+        this.fps=20;//frames per second-to slow down animation of image sheet
+        this.frameTimer=0;//count from 0 to frameInterval
+        this.frameInterval=1000/this.fps;//count how many milliseconds each frame last
         this.frameY=0;
         this.speed=0;
         this.vy=0;
         // to get to opposite when jumping
         this.weight=1;
     }
+    restart(){
+        this.x=100;
+        this.y=this.gameHeight-this.height;
+        this.frameX=0;
+        this.maxFrame=5;
+    }
     draw(context){
-        context.fillStyle='white';
+        // context.strokeStyle='white';
+        // context.strokeRect(this.x,this.y,this.width,this.height);
+        // context.beginPath();
+        // context.arc(this.x+this.width/2,this.y+this.height/2,this.width/2,0,Math.PI*2);//X,Y,radius,startAngle,EndAngle
+        // context.stroke();
+        // context.strokeStyle='blue';
+        // context.beginPath();
+        // context.arc(this.x,this.y,this.width/2,0,Math.PI*2);//X,Y,radius,startAngle,EndAngle
+        // context.stroke();
+
+        // context.fillStyle='white';
         // context.fillRect(this.x,this.y,this.width,this.height);
         //image,(source x,source y,source w,source height)-to get image from sheet,
         // (x,y,width,height)where to place crop out canvas
         context.drawImage(this.image,this.frameX*this.width,this.frameY*this.height,this.width,this.height,this.x,this.y,this.width,this.height);
     }
-    update(input){
-        //horizontal movement
-
+    update(input,deltaTime,enemies){
+        //check collapsing
+        enemies.forEach(enemy=>{
+           const dx=(enemy.x+enemy.width/2)-(this.x+this.width/2);
+           const dy=(enemy.y+enemy.height/2)-(this.y+this.height/2);
+           const distance=Math.sqrt(dx*dx+dy*dy);
+           if (distance<enemy.width/2+this.width/2){
+               gameOver=true;
+           }
+        });
+        //image(sprite) sheet animation
+        if (this.frameTimer>this.frameInterval){
+            if (this.frameX>this.maxFrame){
+                this.frameX=0;
+            }else{
+                this.frameX++;
+            }
+            this.frameTimer=0;
+        }else {
+            this.frameTimer+=deltaTime;
+        }
+        //horizontal movement-controls
         if (input.keys.indexOf('ArrowRight')>-1) {
             this.speed = 5;
         }else if (input.keys.indexOf('ArrowLeft')>-1){
@@ -123,6 +164,10 @@ class Background{
         context.drawImage(this.image,this.x+this.width-this.speed,this.y,this.width,this.height);
     }
 
+    restart(){
+        this.x=0;
+    }
+
     update(){
         //to scroll to left
         this.x-=this.speed;
@@ -146,15 +191,44 @@ class Enemy {
         this.y=this.gameHeight-this.height;
         // for horizontal navigation of image sheet
         this.frameX=0;
+        this.maxFrame=5;
+        this.fps=20;//frames per second-to slow down animation of image sheet
+        this.frameTimer=0;//count from 0 to frameInterval
+        this.frameInterval=1000/this.fps;//count how many milliseconds each frame last
         this.speed=8;
+        this.markedForDeletion=false;
     }
     draw(context){
+        // context.strokeStyle='white';
+        // context.strokeRect(this.x,this.y,this.width,this.height);
+        // context.beginPath();
+        // context.arc(this.x+this.width/2,this.y+this.height/2,this.width/2,0,Math.PI*2);//X,Y,radius,startAngle,EndAngle
+        // context.stroke();
+        // context.strokeStyle='blue';
+        // context.beginPath();
+        // context.arc(this.x,this.y,this.width/2,0,Math.PI*2);//X,Y,radius,startAngle,EndAngle
+        // context.stroke();
         // (image,(sx,sy,sw,sh)-to get from image sheet,(x,y,width,height)-image positioning)
-        context.drawImage(this.image,this.frameX*this.width,0,this.width,this.height,this.x,this.y,this.width,this.height);
+        context.drawImage(this.image,this.frameX*this.width,0,this.width,this.height,
+            this.x,this.y,this.width,this.height);
     }
 
-    update(){
+    update(deltaTime){
+        if (this.frameTimer>this.frameInterval){//to slow down the image frame rate
+            if(this.frameX>=this.maxFrame){ //cycle between frames
+                this.frameX=0;
+            }else{
+                this.frameX++;
+            }
+            this.frameTimer=0;
+        }else{
+            this.frameTimer+=deltaTime;
+        }
         this.x-=this.speed;
+        if (this.x<0-this.width){//to delete passed enemies
+            this.markedForDeletion=true;
+            score++;
+        }
     }
 }
 // add remove animate enemies
@@ -169,17 +243,38 @@ function handleEnemies(deltaTime){
     // call draw and update method on each enemy added to list
     enemies.forEach(enemy=>{
         enemy.draw(ctx);
-        enemy.update();
-    })
+        enemy.update(deltaTime);
+    });
+    enemies=enemies.filter(enemy=>!enemy.markedForDeletion);//passed enemy deleted
 }
 
 
 
 // display score,messages
-function displayStatusText(){
-
+function displayStatusText(context){
+    context.textAlign='left';
+    context.font='40px Helvetica';
+    context.fillStyle='black';
+    context.fillText('Score :'+ score,20,50);//text we want to draw +x and y coordinates
+    context.fillStyle='white';
+    context.fillText('Score :'+ score,20,52);//2 times to get shadow
+    if (gameOver){
+        context.textAlign='center';
+        context.fillStyle='black';
+        context.fillText('Game Over Press Enter to Restart!',canvas.width/2,200);
+        context.fillStyle='white';
+        context.fillText('Game Over Press Enter to Restart!',canvas.width/2+2,200);
+    }
 }
 
+    function restartGame(){
+        player.restart();
+        background.restart();
+        enemies=[];
+        score=0;
+        gameOver=false;
+        animate(0);
+}
 
     const input=new InputHandler();
     const player=new Player(canvas.width,canvas.height);
@@ -197,13 +292,16 @@ function displayStatusText(){
         lastTime=timeStamp;
         ctx.clearRect(0,0,canvas.width,canvas.height);
         background.draw(ctx);
-        // background.update();
+        background.update();
         player.draw(ctx);
         //pass keyboard input
-        player.update(input);
-        handleEnemies(deltaTime);
+        player.update(input,deltaTime,enemies);
+        handleEnemies(deltaTime)
+        displayStatusText(ctx);
         // built in method to loop
-        requestAnimationFrame(animate);
+        if(!gameOver){
+            requestAnimationFrame(animate)
+        }
     }
 
     animate(0);
