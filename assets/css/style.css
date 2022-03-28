@@ -15,6 +15,6 @@ body{
     max-height: 100%;
 }
 
-#playerImage,#enemyImage,#backgroundImage{
+#playerImage,#enemyImage,#backgroundImage,#backgroundImage2{
     display: none;
 }

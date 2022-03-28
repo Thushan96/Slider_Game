@@ -15,20 +15,21 @@ class InputHandler{
         this.keys=[];
         window.addEventListener('keydown',e=>{
             // check array down and the key is already in the array or not
-            if (e.key=="ArrowDown" ||
+            if (e.key=='ArrowDown' ||
                 e.key=='ArrowUp' ||
                 e.key=='ArrowLeft' ||
-                e.key=='ArrowRight' 
-                && this.keys.indexOf(e.key)==-1){
+                e.key=='ArrowRight' &&
+                this.keys.indexOf(e.key)==-1){
                 this.keys.push(e.key);
             }else if (e.key=='Enter' && gameOver) restartGame();
 
         });
         window.addEventListener('keyup',e=>{
             // check array down and the key is already in the array or not
-            if (e.key=="ArrowDown" || e.key=='ArrowUp' ||
-            e.key=='ArrowLeft' ||
-            e.key=='ArrowRight' ){
+            if (e.key=='ArrowDown' ||
+                e.key=='ArrowUp' ||
+                e.key=='ArrowLeft' ||
+                e.key=='ArrowRight' ){
                 this.keys.splice(this.keys.indexOf(e.key),1);
             }
         });
