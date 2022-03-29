@@ -6,7 +6,11 @@ window.addEventListener("load", function (){
     let enemies=[];
     let score=0;
     let gameOver=false;
-    const fullScreenButton=document.getElementById("btnFullScreen");
+    const fullScreenButton=document.getElementById("btnFullScreen")
+
+    const numOfEnemies=100;
+    const enemiesArray=[];
+    let gameFrame=0;
 
 
 
@@ -282,7 +286,47 @@ function handleEnemies(deltaTime){
         enemy.update(deltaTime);
     });
     enemies=enemies.filter(enemy=>!enemy.markedForDeletion);//passed enemy deleted
+
+//    new Flying Enemy
+    enemiesArray.forEach(enemy=>{
+        enemy.draw();
+        enemy.update();
+    })
 }
+
+class FlyingEnemy{
+    constructor() {
+        this.image=new Image();
+        this.image.src='assets/images/enemy2.png';
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.speed=Math.random()*4-2;//Run enemies left and right direction(between -2 and +
+        this.spriteWidth=293;
+        this.spriteHeight=155
+        this.width=this.spriteWidth/2.5;
+        this.height=this.spriteHeight/2.5;
+        this.frame=0;
+        this.flapSpeed=Math.floor(Math.random()*3+1);//get integers between 3 and 4
+
+
+    }
+
+    update(){
+        this.x+=this.speed;
+        this.y+=this.speed;
+        if (gameFrame%this.flapSpeed===0){
+            this.frame>4 ? this.frame=0 :this.frame++;//if frame more than 4 set back to zero else frame++
+        }
+    }
+
+    draw(){
+        ctx.drawImage(this.image,this.frame*this.spriteWidth,0,this.spriteWidth,this.spriteHeight,this.x,this.y,this.width,this.height);
+    }
+}
+
+    for (let i=0;i<numOfEnemies;i++){
+        enemiesArray.push(new FlyingEnemy());
+    }
 
 
 
@@ -334,6 +378,7 @@ function displayStatusText(context){
         player.update(input,deltaTime,enemies);
         handleEnemies(deltaTime)
         displayStatusText(ctx);
+        gameFrame++;
         // built in method to loop
         if(!gameOver){
             requestAnimationFrame(animate)
