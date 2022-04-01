@@ -1,5 +1,16 @@
-window.addEventListener("load", function (){
-    const canvas=document.getElementById("canvas1");
+$(document).ready(function (){
+canvas.style.display='none';
+});
+
+function startGame(){
+    const element=document.getElementById("loader_container");
+    element.remove();
+    canvas.style.display='block';
+    startAnimations();
+}
+const canvas=document.getElementById("canvas1");
+
+function startAnimations(){
     const ctx=canvas.getContext('2d');
     canvas.width=1600;
     canvas.height=720;
@@ -8,9 +19,11 @@ window.addEventListener("load", function (){
     let gameOver=false;
     const fullScreenButton=document.getElementById("btnFullScreen")
 
-    const numOfEnemies=100;
+    const numOfEnemies=3;
     const enemiesArray=[];
     let gameFrame=0;
+
+    let playerX=0;
 
 
 
@@ -100,6 +113,7 @@ class Player{
     }
     restart(){
         this.x=100;
+        playerX=this.x;
         this.y=this.gameHeight-this.height;
         this.frameX=0;
         this.maxFrame=5;
@@ -121,7 +135,7 @@ class Player{
         // (x,y,width,height)where to place crop out canvas
         context.drawImage(this.image,this.frameX*this.width,this.frameY*this.height,this.width,this.height,this.x,this.y,this.width,this.height);
     }
-    update(input,deltaTime,enemies){
+    update(input,deltaTime,enemies,flyingEnemy){
         //check collapsing
         enemies.forEach(enemy=>{
            const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
@@ -131,12 +145,23 @@ class Player{
                gameOver=true;
            }
         });
+
+        flyingEnemy.forEach(flyingEnemy=>{
+            const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
+            const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
+            const distance=Math.sqrt(dx*dx+dy*dy);
+            if (distance<flyingEnemy.width/3+this.width/3){
+                gameOver=true;
+            }
+        });
+
         //image(sprite) sheet animation
         if (this.frameTimer>this.frameInterval){
             if (this.frameX>this.maxFrame){
                 this.frameX=0;
             }else{
                 this.frameX++;
+                playerX=this.x;
             }
             this.frameTimer=0;
         }else {
@@ -149,7 +174,7 @@ class Player{
             this.speed=-5;
         }else if ((input.keys.indexOf('ArrowUp')>-1 || input.keys.indexOf('swipe up')>-1) && this.onGround()){
             //velocity y to jump
-            this.vy -=32;
+            this.vy -=30;
 
         }else{
             this.speed=0;
@@ -162,6 +187,7 @@ class Player{
             this.x=0;
         }else if (this.x>this.gameWidth-this.width){
             this.x=this.gameWidth-this.width;
+            playerX=this.x;
         }
         //vertical
         this.y+=this.vy;
@@ -220,11 +246,14 @@ class Background{
 
 }
 
+ let enemyWidth=0;
+
 class Enemy {
     constructor(gameWidth,gameHeight) {
         this.gameWidth=gameWidth;
         this.gameHeight=gameHeight;
         this.width=160;
+        enemyWidth=this.width;
         this.height=119;
         this.image=document.getElementById("enemyImage");
         this.x=this.gameWidth;
@@ -298,22 +327,26 @@ class FlyingEnemy{
     constructor() {
         this.image=new Image();
         this.image.src='assets/images/enemy2.png';
-        this.x=Math.random()*canvas.width;
-        this.y=Math.random()*canvas.height;
-        this.speed=Math.random()*4-2;//Run enemies left and right direction(between -2 and +
+        this.speed=Math.random()*4+1;
         this.spriteWidth=293;
         this.spriteHeight=155
         this.width=this.spriteWidth/2.5;
         this.height=this.spriteHeight/2.5;
+        this.x=Math.random()*(canvas.width-this.width);
+        this.y=Math.random()*(canvas.height-this.height);
         this.frame=0;
-        this.flapSpeed=Math.floor(Math.random()*3+1);//get integers between 3 and 4
+        this.flapSpeed=Math.floor(Math.random()*3+1);//get integers between 1 and 4
 
 
     }
 
     update(){
         this.x+=this.speed;
-        this.y+=this.speed;
+        this.y+=Math.random() * 5 - 2.5;
+        if (this.x+this.width>canvas.width-this.width){
+            this.x=this.width-canvas.width;
+        }
+
         if (gameFrame%this.flapSpeed===0){
             this.frame>4 ? this.frame=0 :this.frame++;//if frame more than 4 set back to zero else frame++
         }
@@ -366,6 +399,8 @@ function displayStatusText(context){
     let enemyInterval=2000;
     let randomEnemyInterval=Math.random() * 1000 +500;
 
+
+
     function animate(timeStamp){
         // to get difference from this loop and last loop
         const deltaTime=timeStamp-lastTime
@@ -375,7 +410,7 @@ function displayStatusText(context){
         background.update();
         player.draw(ctx);
         //pass keyboard input
-        player.update(input,deltaTime,enemies);
+        player.update(input,deltaTime,enemies, enemiesArray);
         handleEnemies(deltaTime)
         displayStatusText(ctx);
         gameFrame++;
@@ -387,4 +422,4 @@ function displayStatusText(context){
 
     animate(0);
 
-});
+}

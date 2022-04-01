@@ -6,13 +6,39 @@
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <link href="assets/css/normalize.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
+
+    <style>
+        #loader_container {
+            width: 100vw;
+            height: 100vh;
+            background-image:url("assets/images/background3.jpg") ;
+            background-position:center;
+            background-size:cover;
+            overflow: hidden;
+        }
+        #loader_container > p{
+            position: relative;
+            margin: auto;
+            left: 538px;
+            bottom: 0;
+            top: 245px;
+            right: 0;
+            font-size: 3em;
+            color: aliceblue;
+            display: inline;
+        }
+    </style>
 </head>
 <body>
-<canvas id="canvas1"></canvas>
+<div id="loader_container">
+    <p onclick="startGame()">Start Game</p>
+</div>
+<canvas id="canvas1" ></canvas>
 <img id="playerImage" src="assets/images/player.png">
 <img id="backgroundImage" src="assets/images/background3.jpg">
 <img id="enemyImage" src="assets/images/enemy-1.png">
 <button id="btnFullScreen">Toggle fullscreen</button>
+<script src="assets/jQuery/jquery-3.6.0.min.js"></script>
 <script src="assets/js/script.js"></script>
 </body>
 </html>
