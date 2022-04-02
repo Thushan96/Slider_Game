@@ -7,6 +7,7 @@ function startGame(){
     element.remove();
     canvas.style.display='block';
     startAnimations();
+
 }
 const canvas=document.getElementById("canvas1");
 
@@ -20,10 +21,13 @@ function startAnimations(){
     const fullScreenButton=document.getElementById("btnFullScreen")
 
     const numOfEnemies=3;
-    const enemiesArray=[];
+    let enemiesArray=[];
+    let cutterArray=[];
     let gameFrame=0;
 
-    let playerX=0;
+    let cutterY=+300;
+    let level=1;
+
 
 
 
@@ -113,7 +117,6 @@ class Player{
     }
     restart(){
         this.x=100;
-        playerX=this.x;
         this.y=this.gameHeight-this.height;
         this.frameX=0;
         this.maxFrame=5;
@@ -135,7 +138,7 @@ class Player{
         // (x,y,width,height)where to place crop out canvas
         context.drawImage(this.image,this.frameX*this.width,this.frameY*this.height,this.width,this.height,this.x,this.y,this.width,this.height);
     }
-    update(input,deltaTime,enemies,flyingEnemy){
+    update(input,deltaTime,enemies,flyingEnemy,cutterEnemy){
         //check collapsing
         enemies.forEach(enemy=>{
            const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
@@ -146,14 +149,28 @@ class Player{
            }
         });
 
-        flyingEnemy.forEach(flyingEnemy=>{
-            const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
-            const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
-            const distance=Math.sqrt(dx*dx+dy*dy);
-            if (distance<flyingEnemy.width/3+this.width/3){
-                gameOver=true;
-            }
-        });
+        if(score>2){
+            cutterEnemy.forEach(cutterEnemy=>{
+                const dx=(cutterEnemy.x+cutterEnemy.width/2-20)-(this.x+this.width/2);
+                const dy=(cutterEnemy.y+cutterEnemy.height/2)-(this.y+this.height/2+50);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if (distance<cutterEnemy.width/3+this.width/3){
+                    gameOver=true;
+                }
+            });
+        }
+
+        if(score>5){
+            flyingEnemy.forEach(flyingEnemy=>{
+                const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
+                const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if (distance<flyingEnemy.width/3+this.width/3){
+                    gameOver=true;
+                }
+            });
+        }
+
 
         //image(sprite) sheet animation
         if (this.frameTimer>this.frameInterval){
@@ -161,7 +178,6 @@ class Player{
                 this.frameX=0;
             }else{
                 this.frameX++;
-                playerX=this.x;
             }
             this.frameTimer=0;
         }else {
@@ -174,7 +190,7 @@ class Player{
             this.speed=-5;
         }else if ((input.keys.indexOf('ArrowUp')>-1 || input.keys.indexOf('swipe up')>-1) && this.onGround()){
             //velocity y to jump
-            this.vy -=30;
+            this.vy -=28;
 
         }else{
             this.speed=0;
@@ -187,7 +203,6 @@ class Player{
             this.x=0;
         }else if (this.x>this.gameWidth-this.width){
             this.x=this.gameWidth-this.width;
-            playerX=this.x;
         }
         //vertical
         this.y+=this.vy;
@@ -309,6 +324,7 @@ function handleEnemies(deltaTime){
     }else{
         enemyTimer+=deltaTime;
     }
+
     // call draw and update method on each enemy added to list
     enemies.forEach(enemy=>{
         enemy.draw(ctx);
@@ -316,11 +332,23 @@ function handleEnemies(deltaTime){
     });
     enemies=enemies.filter(enemy=>!enemy.markedForDeletion);//passed enemy deleted
 
-//    new Flying Enemy
-    enemiesArray.forEach(enemy=>{
-        enemy.draw();
-        enemy.update();
-    })
+    if(score>2){
+        level=2;
+        cutterArray.forEach(enemy=>{//    new Flying Enemy
+            enemy.draw();
+            enemy.update();
+        });
+    }
+    if(score>5){
+        level=3;
+        cutterArray=[];
+        enemiesArray.forEach(enemy=>{//    new Flying Enemy
+            enemy.draw();
+            enemy.update();
+        });
+    }
+
+
 }
 
 class FlyingEnemy{
@@ -344,7 +372,7 @@ class FlyingEnemy{
         this.x+=this.speed;
         this.y+=Math.random() * 5 - 2.5;
         if (this.x+this.width>canvas.width-this.width){
-            this.x=this.width-canvas.width;
+            this.x=(this.width-canvas.width);
         }
 
         if (gameFrame%this.flapSpeed===0){
@@ -357,9 +385,56 @@ class FlyingEnemy{
     }
 }
 
-    for (let i=0;i<numOfEnemies;i++){
-        enemiesArray.push(new FlyingEnemy());
+    function createFlyingEnemy(){
+        for (let i=0;i<numOfEnemies;i++){
+            enemiesArray.push(new FlyingEnemy());
+        }
+    };
+    createFlyingEnemy();
+
+
+
+    class Cutter{
+        constructor() {
+            this.image=new Image();
+            this.image.src='assets/images/enemy4.png';
+            this.speed=Math.random()*4+1;
+            this.spriteWidth=213;
+            this.spriteHeight=212;
+            this.width=this.spriteWidth/2.5;//make relative width relative to sprite sheet
+            this.height=this.spriteHeight/2.5;
+            this.x=Math.random()*(canvas.width-this.width);
+            this.y=cutterY;
+            this.frame=0;
+            this.flapSpeed=Math.floor(Math.random()*3+1);//get integers between 1 and 4
+
+
+        }
+
+        update(){
+            this.x -=this.speed;
+            // this.y+=Math.random() * 5 - 2.5;
+            if (this.x+this.width<0){
+                this.x=canvas.width;
+            }
+
+            if (gameFrame%this.flapSpeed===0){
+                this.frame>7 ? this.frame=0 :this.frame++;//if frame more than 4 set back to zero else frame++
+            }
+        }
+
+        draw(){
+            ctx.drawImage(this.image,this.frame*this.spriteWidth,0,this.spriteWidth,this.spriteHeight,this.x,this.y,this.width,this.height);
+        }
     }
+
+    function createCutterEnemy(){
+        for (let i=0;i<numOfEnemies;i++){
+            cutterArray.push(new Cutter());
+        }
+    };
+    createCutterEnemy();
+
 
 
 
@@ -371,6 +446,12 @@ function displayStatusText(context){
     context.fillText('Score :'+ score,20,50);//text we want to draw +x and y coordinates
     context.fillStyle='white';
     context.fillText('Score :'+ score,20,52);//2 times to get shadow
+    context.fillStyle='white';
+    context.fillText('Level - '+ level,20,88);//2 times to get shadow
+    context.fillStyle='black';
+
+
+
     if (gameOver){
         context.textAlign='center';
         context.fillStyle='black';
@@ -384,8 +465,13 @@ function displayStatusText(context){
         player.restart();
         background.restart();
         enemies=[];
+        enemiesArray=[];
+        cutterArray=[];
         score=0;
+        level=1;
         gameOver=false;
+        createFlyingEnemy();
+        createCutterEnemy();
         animate(0);
 }
 
@@ -410,8 +496,8 @@ function displayStatusText(context){
         background.update();
         player.draw(ctx);
         //pass keyboard input
-        player.update(input,deltaTime,enemies, enemiesArray);
-        handleEnemies(deltaTime)
+        player.update(input,deltaTime,enemies, enemiesArray,cutterArray);
+        handleEnemies(deltaTime);
         displayStatusText(ctx);
         gameFrame++;
         // built in method to loop
