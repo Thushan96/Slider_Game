@@ -39,25 +39,26 @@ class InputHandler{
         this.touchTreshhold=30;
         window.addEventListener('keydown',e=>{
             // check array down and the key is already in the array or not
-            if (e.key=='ArrowDown' ||
-                e.key=='ArrowUp' ||
-                e.key=='ArrowLeft' ||
-                e.key=='ArrowRight' &&
-                this.keys.indexOf(e.key)==-1){
+            if (e.key==='ArrowDown' ||
+                e.key==='ArrowUp' ||
+                e.key==='ArrowLeft' ||
+                e.key==='ArrowRight' &&
+                this.keys.indexOf(e.key)===-1){
                 this.keys.push(e.key);
-            }else if (e.key=='Enter' && gameOver) restartGame();
+            }else if (e.key==='Enter' && gameOver) restartGame();
 
         });
         window.addEventListener('keyup',e=>{
             // check array down and the key is already in the array or not
-            if (e.key=='ArrowDown' ||
-                e.key=='ArrowUp' ||
-                e.key=='ArrowLeft' ||
-                e.key=='ArrowRight' ){
+            if (e.key==='ArrowDown' ||
+                e.key==='ArrowUp' ||
+                e.key==='ArrowLeft' ||
+                e.key==='ArrowRight' ){
                 this.keys.splice(this.keys.indexOf(e.key),1);
             }
         });
         window.addEventListener('touchstart',e=>{
+            //changedTouches-read only list that store touch objects-pageY,pageX
             this.touchY=e.changedTouches[0].pageY;
         });
         window.addEventListener('touchmove',e=>{
@@ -183,7 +184,7 @@ class Player{
         }else {
             this.frameTimer+=deltaTime;
         }
-        //horizontal movement-controls
+        //horizontal movement- controls
         if (input.keys.indexOf('ArrowRight')>-1) {
             this.speed = 5;
         }else if (input.keys.indexOf('ArrowLeft')>-1){
