@@ -24,6 +24,7 @@ function startAnimations(){
     let enemiesArray=[];
     let cutterArray=[];
     let SpiderArray=[];
+    let ghostArray=[];
     let gameFrame=0;
 
     let cutterY=+300;
@@ -142,49 +143,51 @@ class Player{
         context.drawImage(this.image,this.frameX*this.width,this.frameY*this.height,this.width,this.height,this.x,this.y,this.width,this.height);
     }
     update(input,deltaTime,enemies,flyingEnemy,cutterEnemy,spiderArray){
-        //check collapsing
-        enemies.forEach(enemy=>{
-           const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
-           const dy=(enemy.y+enemy.height/2)-(this.y+this.height/2+20);
-           const distance=Math.sqrt(dx*dx+dy*dy);
-           if (distance<enemy.width/3+this.width/3){
-               gameOver=true;
-           }
-        });
+        // check collapsing
+        // enemies.forEach(enemy=>{
+        //    const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
+        //    const dy=(enemy.y+enemy.height/2)-(this.y+this.height/2+20);
+        //    const distance=Math.sqrt(dx*dx+dy*dy);
+        //    if (distance<enemy.width/3+this.width/3){
+        //        gameOver=true;
+        //    }
+        // });
+        //
+        // if(score>5){
+        //     spiderArray.forEach(spider=>{
+        //         const dx=(spider.x+spider.width/2-20)-(this.x+this.width/2);
+        //         const dy=(spider.y+spider.height/2)-(this.y+this.height/2+50);
+        //         const distance=Math.sqrt(dx*dx+dy*dy);
+        //         if (distance<spider.width/3+this.width/3){
+        //             gameOver=true;
+        //         }
+        //     });
+        // }
+        //
+        //
+        // if(score>10){
+        //     cutterEnemy.forEach(cutterEnemy=>{
+        //         const dx=(cutterEnemy.x+cutterEnemy.width/2-20)-(this.x+this.width/2);
+        //         const dy=(cutterEnemy.y+cutterEnemy.height/2)-(this.y+this.height/2+50);
+        //         const distance=Math.sqrt(dx*dx+dy*dy);
+        //         if (distance<cutterEnemy.width/3+this.width/3){
+        //             gameOver=true;
+        //         }
+        //     });
+        // }
+        //
+        // if(score>15){
+        //     flyingEnemy.forEach(flyingEnemy=>{
+        //         const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
+        //         const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
+        //         const distance=Math.sqrt(dx*dx+dy*dy);
+        //         if (distance<flyingEnemy.width/3+this.width/3){
+        //             gameOver=true;
+        //         }
+        //     });
+        // }
 
-        if(score>5){
-            spiderArray.forEach(spider=>{
-                const dx=(spider.x+spider.width/2-20)-(this.x+this.width/2);
-                const dy=(spider.y+spider.height/2)-(this.y+this.height/2+50);
-                const distance=Math.sqrt(dx*dx+dy*dy);
-                if (distance<spider.width/3+this.width/3){
-                    gameOver=true;
-                }
-            });
-        }
 
-
-        if(score>10){
-            cutterEnemy.forEach(cutterEnemy=>{
-                const dx=(cutterEnemy.x+cutterEnemy.width/2-20)-(this.x+this.width/2);
-                const dy=(cutterEnemy.y+cutterEnemy.height/2)-(this.y+this.height/2+50);
-                const distance=Math.sqrt(dx*dx+dy*dy);
-                if (distance<cutterEnemy.width/3+this.width/3){
-                    gameOver=true;
-                }
-            });
-        }
-
-        if(score>15){
-            flyingEnemy.forEach(flyingEnemy=>{
-                const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
-                const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
-                const distance=Math.sqrt(dx*dx+dy*dy);
-                if (distance<flyingEnemy.width/3+this.width/3){
-                    gameOver=true;
-                }
-            });
-        }
 
 
 
@@ -349,16 +352,30 @@ function handleEnemies(deltaTime){
     });
     enemies=enemies.filter(enemy=>!enemy.markedForDeletion);//passed enemy deleted
 
-    if (score>5){
-        level=2;
-        SpiderArray.forEach(spider=>{//    new Flying Enemy
-            spider.draw();
-            spider.update(deltaTime);
+
+
+
+
+
+    if (score>2){
+        // level=2;
+        // SpiderArray.forEach(spider=>{//    new Flying Enemy
+        //     spider.draw();
+        //     spider.update(deltaTime);
+        // });
+        // if (enemyTimer>enemyInterval+randomEnemyInterval){
+        //     SpiderArray.push(new Spider(canvas.width,canvas.height));
+        // }
+        // SpiderArray=SpiderArray.filter(Spider=>!Spider.markedForDeletion);
+
+        ghostArray=ghostArray.filter(Spider=>!Spider.markedForDeletion);
+
+        ghostArray.forEach(ghost=>{//    new Flying Enemy
+            ghost.draw();
+            ghost.update(deltaTime);
         });
-        if (enemyTimer>enemyInterval+randomEnemyInterval){
-            SpiderArray.push(new Spider(canvas.width,canvas.height));
-        }
-        SpiderArray=SpiderArray.filter(Spider=>!Spider.markedForDeletion);
+
+
     }
 
 
@@ -521,6 +538,56 @@ class FlyingEnemy{
         }
     };
     createSpiderEnemy();
+
+    class Ghost{
+        constructor(width,height) {
+            this.image=new Image();
+            this.image.src='assets/images/enemy_ghost.png';
+            this.speed=Math.random()*4+1;
+            this.spriteWidth=261;
+            this.spriteHeight=209;
+            this.width=this.spriteWidth/2.5;//make relative width relative to sprite sheet
+            this.height=this.spriteHeight/2.5;
+            this.x=Math.random()*width;
+            this.y=Math.random()*height*0.6;//0 and height x 0.6
+            this.frame=0;
+            this.flapSpeed=Math.floor(Math.random()*5+1);//get integers between 1 and 4
+            this.vx=Math.random()*0.3+0.4;
+            this.markedForDeletion=false;
+        }
+
+        update(deltaTime){
+            // this.x-=this.vx *(deltaTime*deltaTime);
+            // this.y+=Math.random() * 5 - 2.5;
+            // if (this.x<0-this.width){
+            //     this.markedForDeletion=true;
+            // }
+            this.x-=this.vx*deltaTime;//for constant speed in every computer
+
+            if (this.x<0-this.width){
+               this.x=canvas.width;
+            }
+
+            if (gameFrame%this.flapSpeed===0){
+                this.frame>4 ? this.frame=0 :this.frame++;//if frame more than 4 set back to zero else frame++
+            }
+
+        }
+
+        draw(){
+            ctx.save();
+            ctx.globalAlpha=0.7;//transparent
+            ctx.drawImage(this.image,this.frame*this.spriteWidth,0,this.spriteWidth,this.spriteHeight,this.x,this.y,this.width,this.height);
+            ctx.restore();//restore saved ctx
+        }
+    }
+
+    function createGhostEnemy(){
+        for (let i=0;i<numOfEnemies;i++){
+            ghostArray.push(new Ghost(canvas.width,canvas.height));
+        }
+    };
+    createGhostEnemy();
 
 
 
