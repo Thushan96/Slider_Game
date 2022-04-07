@@ -144,48 +144,60 @@ class Player{
     }
     update(input,deltaTime,enemies,flyingEnemy,cutterEnemy,spiderArray){
         // check collapsing
-        // enemies.forEach(enemy=>{
-        //    const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
-        //    const dy=(enemy.y+enemy.height/2)-(this.y+this.height/2+20);
-        //    const distance=Math.sqrt(dx*dx+dy*dy);
-        //    if (distance<enemy.width/3+this.width/3){
-        //        gameOver=true;
-        //    }
-        // });
-        //
-        // if(score>5){
-        //     spiderArray.forEach(spider=>{
-        //         const dx=(spider.x+spider.width/2-20)-(this.x+this.width/2);
-        //         const dy=(spider.y+spider.height/2)-(this.y+this.height/2+50);
-        //         const distance=Math.sqrt(dx*dx+dy*dy);
-        //         if (distance<spider.width/3+this.width/3){
-        //             gameOver=true;
-        //         }
-        //     });
-        // }
-        //
-        //
-        // if(score>10){
-        //     cutterEnemy.forEach(cutterEnemy=>{
-        //         const dx=(cutterEnemy.x+cutterEnemy.width/2-20)-(this.x+this.width/2);
-        //         const dy=(cutterEnemy.y+cutterEnemy.height/2)-(this.y+this.height/2+50);
-        //         const distance=Math.sqrt(dx*dx+dy*dy);
-        //         if (distance<cutterEnemy.width/3+this.width/3){
-        //             gameOver=true;
-        //         }
-        //     });
-        // }
-        //
-        // if(score>15){
-        //     flyingEnemy.forEach(flyingEnemy=>{
-        //         const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
-        //         const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
-        //         const distance=Math.sqrt(dx*dx+dy*dy);
-        //         if (distance<flyingEnemy.width/3+this.width/3){
-        //             gameOver=true;
-        //         }
-        //     });
-        // }
+        enemies.forEach(enemy=>{
+           const dx=(enemy.x+enemy.width/2-20)-(this.x+this.width/2);
+           const dy=(enemy.y+enemy.height/2)-(this.y+this.height/2+20);
+           const distance=Math.sqrt(dx*dx+dy*dy);
+           if (distance<enemy.width/3+this.width/3){
+               gameOver=true;
+           }
+        });
+
+        if(score>5){
+            spiderArray.forEach(spider=>{
+                const dx=(spider.x+spider.width/2-20)-(this.x+this.width/2);
+                const dy=(spider.y+spider.height/2)-(this.y+this.height/2+50);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if (distance<spider.width/3+this.width/3){
+                    gameOver=true;
+                }
+            });
+        }
+
+
+        if(score>10){
+            cutterEnemy.forEach(cutterEnemy=>{
+                const dx=(cutterEnemy.x+cutterEnemy.width/2-20)-(this.x+this.width/2);
+                const dy=(cutterEnemy.y+cutterEnemy.height/2)-(this.y+this.height/2+50);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if (distance<cutterEnemy.width/3+this.width/3){
+                    gameOver=true;
+                }
+            });
+        }
+
+        if(score>15){
+            flyingEnemy.forEach(flyingEnemy=>{
+                const dx=(flyingEnemy.x+flyingEnemy.width/2-20)-(this.x+this.width/2);
+                const dy=(flyingEnemy.y+flyingEnemy.height/2)-(this.y+this.height/2+50);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if (distance<flyingEnemy.width/3+this.width/3){
+                    gameOver=true;
+                }
+            });
+        }
+
+        if (score>20){
+            ghostArray.forEach(ghost=>{
+                        const dx=(ghost.x+ghost.width/2-20)-(this.x+this.width/2);
+                        const dy=(ghost.y+ghost.height/2)-(this.y+this.height/2+50);
+                        const distance=Math.sqrt(dx*dx+dy*dy);
+                        if (distance<ghost.width/3+this.width/3){
+                            gameOver=true;
+                        }
+                    });
+
+        }
 
 
 
@@ -358,23 +370,15 @@ function handleEnemies(deltaTime){
 
 
     if (score>2){
-        // level=2;
-        // SpiderArray.forEach(spider=>{//    new Flying Enemy
-        //     spider.draw();
-        //     spider.update(deltaTime);
-        // });
-        // if (enemyTimer>enemyInterval+randomEnemyInterval){
-        //     SpiderArray.push(new Spider(canvas.width,canvas.height));
-        // }
-        // SpiderArray=SpiderArray.filter(Spider=>!Spider.markedForDeletion);
-
-        ghostArray=ghostArray.filter(Spider=>!Spider.markedForDeletion);
-
-        ghostArray.forEach(ghost=>{//    new Flying Enemy
-            ghost.draw();
-            ghost.update(deltaTime);
+        level=2;
+        SpiderArray.forEach(spider=>{//    new Flying Enemy
+            spider.draw();
+            spider.update(deltaTime);
         });
-
+        if (enemyTimer>enemyInterval+randomEnemyInterval){
+            SpiderArray.push(new Spider(canvas.width,canvas.height));
+        }
+        SpiderArray=SpiderArray.filter(Spider=>!Spider.markedForDeletion);
 
     }
 
@@ -395,6 +399,18 @@ function handleEnemies(deltaTime){
             enemy.draw();
             enemy.update();
         });
+    }
+
+    if(score>20){
+        level=5;
+        enemiesArray=[];
+        // ghostArray=ghostArray.filter(Spider=>!Spider.markedForDeletion);
+
+        ghostArray.forEach(ghost=>{//    new Flying Enemy
+            ghost.draw();
+            ghost.update(deltaTime);
+        });
+
     }
 
 
@@ -627,6 +643,7 @@ function displayStatusText(context){
         createFlyingEnemy();
         createCutterEnemy();
         createSpiderEnemy();
+        createGhostEnemy();
         animate(0);
 }
 
